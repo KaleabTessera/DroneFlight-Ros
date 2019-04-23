@@ -1,0 +1,8 @@
+prefix=/home/osboxes/RoboticsAssigments/lab2/devel
+
+Name: cvg_sim_gazebo
+Description: Description of cvg_sim_gazebo
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/osboxes/RoboticsAssigments/lab2/devel/lib 
+Requires: 
