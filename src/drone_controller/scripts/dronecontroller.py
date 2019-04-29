@@ -15,7 +15,6 @@ from DroneStatus import DroneStatus
 import tf
 from math import  cos,sin
 
-COMMAND_PERIOD = 100
 
 class BasicDroneController:
 	def __init__(self):
