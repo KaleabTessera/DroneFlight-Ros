@@ -103,7 +103,7 @@ import time
 class PIDController:
 	def __init__(self,iniState):
 		self.iniState = iniState
-		self.K_I = 0.5
+		self.K_I = 0.2
 		self.K_D = 0.5
 		self.K_P = 1
 		self.error_history = 0
@@ -113,7 +113,10 @@ class PIDController:
 		self.last_error_x =0 
 		self.last_error_y =0 
 		self.last_error_z =0 
-	
+
+		self.integral_x = 0
+		self.integral_y = 0
+		self.integral_z = 0
 	
 	def apply(self,currentState,finalState):	
 		z_c = currentState.pose.position.z
@@ -137,13 +140,13 @@ class PIDController:
 		delta_time = self.current_time - self.last_time
 
 		
-		integral_x = e_t_x * delta_time
-		integral_y = e_t_y * delta_time	
-		integral_z = e_t_z * delta_time
+		self.integral_x += e_t_x * delta_time
+		self.integral_y += e_t_y * delta_time	
+		self.integral_z += e_t_z * delta_time
 
-		I_x = self.K_I * integral_x
-		I_y = self.K_I * integral_y
-		I_z = self.K_I * integral_z
+		I_x = self.K_I * self.integral_x
+		I_y = self.K_I * self.integral_y
+		I_z = self.K_I * self.integral_z
 
 		der_x = (e_t_x - self.last_error_x) /delta_time
 		der_y = (e_t_y - self.last_error_y) /delta_time
@@ -170,6 +173,6 @@ class PIDController:
 if __name__ == '__main__':
 		drone = BasicDroneController()
 		pid_con = PIDController(drone.getGazeboState())
-		drone.navigate(pid_con,[2,2,2])
+		drone.navigate(pid_con,[3,2,5])
 
 
