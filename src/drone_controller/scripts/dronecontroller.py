@@ -79,10 +79,15 @@ class BasicDroneController:
 	
 	def navigate(self,PID,dest):
 		rate = rospy.Rate(10)
+		PID.setInitialTime(time.time())
 		while not rospy.is_shutdown():
 			self.SendTakeoff()
 			rospy.sleep(1)
-			O_x, O_y, O_z = PID.apply(drone.getGazeboState(),dest)
+			
+			O_x, O_y, O_z,shouldStop = PID.apply(drone.getGazeboState(),dest)
+			
+			if(shouldStop):
+				break
 
 			self.SetCommand(O_x,O_y,O_z)
 			self.SendCommand()
@@ -103,13 +108,12 @@ import time
 class PIDController:
 	def __init__(self,iniState):
 		self.iniState = iniState
-		self.K_I = 0.2
+		self.K_I = 0.01
 		self.K_D = 0.5
-		self.K_P = 1
+		self.K_P = 0.6
 		self.error_history = 0
 
-		self.current_time = time.time()
-		self.last_time = self.current_time
+		self.errorThreshold = 0.05
 		self.last_error_x =0 
 		self.last_error_y =0 
 		self.last_error_z =0 
@@ -117,8 +121,12 @@ class PIDController:
 		self.integral_x = 0
 		self.integral_y = 0
 		self.integral_z = 0
+
+	def setInitialTime(self,t=0):
+		self.last_time = t
 	
-	def apply(self,currentState,finalState):	
+	def apply(self,currentState,finalState):
+		shouldStop = None	
 		z_c = currentState.pose.position.z
 		y_c = currentState.pose.position.y
 		x_c = currentState.pose.position.x
@@ -144,6 +152,8 @@ class PIDController:
 		self.integral_y += e_t_y * delta_time	
 		self.integral_z += e_t_z * delta_time
 
+		
+
 		I_x = self.K_I * self.integral_x
 		I_y = self.K_I * self.integral_y
 		I_z = self.K_I * self.integral_z
@@ -165,10 +175,14 @@ class PIDController:
 		O_y = P_y + I_y + D_y
 		O_z = P_z + I_z + D_z
 		
-		# print("O_x : {} O_y : {} O_z : {}".format(O_x,O_y,O_z))
+		print("Error: x:{} y:{} z:{}".format(e_t_x,e_t_y,e_t_z))
 		print("Current: {} Dest: {}".format([x_c,y_c,z_c],[x_f,y_f,z_f]))
 
-		return O_x,O_y,O_z
+		if((abs(e_t_x) < self.errorThreshold * x_f) and (abs(e_t_y) < self.errorThreshold * y_f) and (abs(e_t_z) < self.errorThreshold * z_f)):
+			print("Stopping, error threshold {} : Final Coords: [{},{},{}]".format(self.errorThreshold,x_c,y_c,z_c))			
+			shouldStop = True 
+
+		return O_x,O_y,O_z,shouldStop
 		
 if __name__ == '__main__':
 		drone = BasicDroneController()
