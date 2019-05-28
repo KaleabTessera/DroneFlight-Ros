@@ -199,9 +199,11 @@ if __name__ == '__main__':
 			x = int(args.dest[0])
 			y = int(args.dest[1])
 			z = int(args.dest[2])
-
-		drone = BasicDroneController()
-		pid_con = PIDController(drone.getGazeboState())
-		drone.navigate(pid_con,[x,y,z])
+		try:
+			drone = BasicDroneController()
+			pid_con = PIDController(drone.getGazeboState())
+			drone.navigate(pid_con,[x,y,z])
+		except:
+    			pass
 
 
