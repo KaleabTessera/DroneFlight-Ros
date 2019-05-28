@@ -14,6 +14,7 @@ from DroneStatus import DroneStatus
 
 import tf
 from math import  cos,sin
+import argparse
 
 
 class BasicDroneController:
@@ -185,8 +186,22 @@ class PIDController:
 		return O_x,O_y,O_z,shouldStop
 		
 if __name__ == '__main__':
+		parser = argparse.ArgumentParser(description='PID Controller.')
+		parser.add_argument('--dest', '--list', help='delimited list input', type=str)
+		args = parser.parse_args()
+		
+		x = 3
+		y = 2
+		z = 5
+
+		if(args.dest):
+			args.dest = args.dest.split(',')
+			x = int(args.dest[0])
+			y = int(args.dest[1])
+			z = int(args.dest[2])
+
 		drone = BasicDroneController()
 		pid_con = PIDController(drone.getGazeboState())
-		drone.navigate(pid_con,[3,2,5])
+		drone.navigate(pid_con,[x,y,z])
 
 
